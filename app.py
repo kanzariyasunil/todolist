@@ -41,7 +41,6 @@ def home():
             update(value, change_value)
         elif action == "delete":
             delete(value)
-    print(todo_list)
     # Fetch the latest to-do list to pass to the template
     return render_template("index.html", todos=get_todo())
 
