@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo List</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+    <h1>Todo List</h1>
+    
+    <div id="todo-container">
+        <ul id="todo-list">
+            {% for todo in todos %}
+                <li>{{ todo }} <button class="delete-btn" data-value="{{ todo }}">Delete</button></li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Add Task Form -->
+    <form id="add-form">
+        <input type="text" id="new-task" placeholder="Add a new task" required>
+        <button type="submit">Add Task</button>
+    </form>
+
+    <!-- Update Task Form -->
+    <form id="update-form">
+        <input type="text" id="old-task" placeholder="Task to update" required>
+        <input type="text" id="new-task-update" placeholder="New task value" required>
+        <button type="submit">Update Task</button>
+    </form>
+
+    <script>
+        // Add new task using AJAX
+        $('#add-form').on('submit', function(event) {
+            event.preventDefault();
+            var task = $('#new-task').val();
+            
+            $.ajax({
+                url: '/add',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ value: task }),
+                success: function(response) {
+                    $('#todo-list').empty();
+                    response.todos.forEach(function(todo) {
+                        $('#todo-list').append('<li>' + todo + ' <button class="delete-btn" data-value="' + todo + '">Delete</button></li>');
+                    });
+                    $('#new-task').val('');
+                }
+            });
+        });
+
+        // Update task using AJAX
+        $('#update-form').on('submit', function(event) {
+            event.preventDefault();
+            var oldTask = $('#old-task').val();
+            var newTask = $('#new-task-update').val();
+            
+            $.ajax({
+                url: '/update',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ value: oldTask, change_value: newTask }),
+                success: function(response) {
+                    $('#todo-list').empty();
+                    response.todos.forEach(function(todo) {
+                        $('#todo-list').append('<li>' + todo + ' <button class="delete-btn" data-value="' + todo + '">Delete</button></li>');
+                    });
+                    $('#old-task').val('');
+                    $('#new-task-update').val('');
+                }
+            });
+        });
+
+        // Delete task using AJAX
+        $(document).on('click', '.delete-btn', function() {
+            var task = $(this).data('value');
+            
+            $.ajax({
+                url: '/delete',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ value: task }),
+                success: function(response) {
+                    $('#todo-list').empty();
+                    response.todos.forEach(function(todo) {
+                        $('#todo-list').append('<li>' + todo + ' <button class="delete-btn" data-value="' + todo + '">Delete</button></li>');
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
